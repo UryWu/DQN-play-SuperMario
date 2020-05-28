@@ -5,6 +5,8 @@ import pygame as pg
 import numpy as np
 import scipy.misc
 import random
+import pylab
+from PIL import Image
 
 class Env:
     action_idx = {
@@ -66,7 +68,9 @@ class Env:
         return random.randint(0, 13)
 
     def rgb2gray(self, image):
-        return np.dot(image[..., :3], [0.299, 0.587, 0.114])
+        image = np.asarray(image)
+        np.dot(image[..., :3], [0.299, 0.587, 0.114])
+        return image
 
     def reset(self, start_position=0):
         self.state_dict = {
@@ -85,12 +89,18 @@ class Env:
         #self.run_it.state.viewport.x = start_position
 
         state, _, _, _, _, _, _ = self.run_it.get_step()
-        state = scipy.misc.imresize(state, (self.resize_x, self.resize_y))
-        state = self.rgb2gray(state) / 255.
-        state = scipy.misc.imresize(state, (self.resize_x, self.resize_y))
-        #state = scipy.misc.imresize(state, (self.resize_x, self.resize_y))
 
-        #state = scipy.misc.imresize(state, (self.resize_x, self.resize_y))
+
+        # state = scipy.misc.imresize(state, (self.resize_x, self.resize_y))
+        state = Image.fromarray(np.uint8(state))
+
+        print("state type:", type(state))
+        state = state.resize((self.resize_x, self.resize_y), Image.ANTIALIAS)
+        # pylab.imshow(state)
+        # pylab.show()
+        # input("sfs")
+        state = self.rgb2gray(state) / 255.
+        print("state:", state.shape)
 
         return state
 
@@ -122,13 +132,11 @@ class Env:
         #pg.display.set_caption(with_fps)
 
 
-        next_state = scipy.misc.imresize(next_state, (self.resize_x, self.resize_y))
+        # next_state = scipy.misc.imresize(next_state, (self.resize_x, self.resize_y))
+        next_state = Image.fromarray(np.uint8(next_state))
+
         next_state = self.rgb2gray(next_state) / 255.
-        next_state = scipy.misc.imresize(next_state, (self.resize_x, self.resize_y))
-        #next_state = scipy.misc.imresize(next_state, (self.resize_x, self.resize_y))
-
         #next_state = scipy.misc.imrotate(next_state, -90.)
-
         return (next_state, reward, gameover, clear, max_x, timeout, now_x)
 
 

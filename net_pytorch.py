@@ -1,3 +1,5 @@
+import numpy as np
+
 import torch
 from torch.autograd import Variable
 import torch.nn as nn
@@ -15,7 +17,7 @@ Tensor = FloatTensor
 class dqn_net(nn.Module):
     def __init__(self,ACTION_NUM):
         super(dqn_net,self).__init__()
-        self.conv1=nn.Conv2d(in_channels=4,out_channels=16,kernel_size=8,stride=4)
+        self.conv1=nn.Conv2d(in_channels=3,out_channels=16,kernel_size=8,stride=4)
         self.conv2=nn.Conv2d(in_channels=16,out_channels=32,kernel_size=4,stride=2)
         self.fc1=nn.Linear(in_features=9*9*32,out_features=256)
         self.fc2=nn.Linear(in_features=256,out_features=ACTION_NUM)
@@ -39,7 +41,12 @@ class dqn_net(nn.Module):
         ------
         action_button , action_onehot : {int} , {Tensor}
         '''
-        input=Variable(input.unsqueeze(0))
+        input = input.permute(0, 3, 1, 2)
+        # print("type(input):", type(input))
+        input=Variable(input)
+
+        # print("input:", input.shape)
+
         output=self.forward(input)
         action_index=output.data.max(1)[1][0]
         if action_index==0: return 0,Tensor([1,0,0,0,0,0]) # action_button , action_onehot
